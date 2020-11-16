@@ -1,3 +1,2 @@
 {{>header}}
 <a href="/experiment">Begin experiment</a>
-{{>footer}}
