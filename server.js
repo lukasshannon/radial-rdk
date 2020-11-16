@@ -26,7 +26,7 @@ app.get("/experiment", (request, response) => {
   })
 });
 
-// Listen for requests :)
+// Listen for requests
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("App listening on port " + listener.address().port + "...");
 });
