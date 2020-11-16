@@ -1,0 +1,15 @@
+{
+  "name": "radial_rdk",
+  "version": "1.0.0",
+  "description": "random dot kinetogram of radial motion",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lukas Shannon",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mustache-express": "^1.3.0"
+  }
+}
