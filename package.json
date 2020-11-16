@@ -1,5 +1,5 @@
 {
-  "name": "radial_rdk",
+  "name": "radial-rdk",
   "version": "1.0.0",
   "description": "random dot kinetogram of radial motion",
   "main": "server.js",
