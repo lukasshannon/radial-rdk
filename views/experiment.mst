@@ -20,8 +20,8 @@ timeline.push(welcome);
 var instructions = {
     type: "html-keyboard-response",
     stimulus: "<p>In this experiment, you will keep your eyes focused on the center cross while moving dots appear in your peripheral vision.</p>" +
-              "<p>If the motion of the dots is <strong>expanding outward</strong>, press the letter F on your keyboard as fast as you can.</p>" +
-              "<p>If the motion of the dots is <strong>contracting inward</strong>, press the letter J</p>" +
+              "<p>If the motion of the dots is <strong>expanding outward</strong>, press the letter <strong>F</strong> on your keyboard as fast as you can.</p>" +
+              "<p>If the motion of the dots is <strong>contracting inward</strong>, press the letter <strong>J</strong></p>" +
               "<p>Press any key to begin.</p>",
     post_trial_gap: 1000
 };
@@ -48,7 +48,8 @@ var test = {
 	type: "rdk",
 	timing_post_trial: 0,
 	number_of_dots: 200,
-    
+    aperture_center_x: window.innerWidth/4,
+    aperture_center_x: window.innerHeight/4,
     fixation_cross: "true",
     background_color: "white",
     dot_color: "black",
