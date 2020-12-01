@@ -1,0 +1,3 @@
+.jspsych-content {
+    max-width: 100%; /* overrides an IE 10-11 fix that causes errors */
+  }

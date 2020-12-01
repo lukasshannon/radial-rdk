@@ -1,71 +1,96 @@
 {{>header}}
 
+<script src="lib/jspsych-6.0.5/plugins/jspsych-fullscreen.js"></script>
 <script src="lib/jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
 <script src="lib/jspsych-6.0.5/plugins/jspsych-image-keyboard-response.js"></script>
-<script src="lib/jspsych-6.0.5/plugins/jspsych-rdk.js"></script>
+<script src="js/jspsych-radial-rdk.js"></script>
 
 <script>
 
-/* create timeline */
+/* Create timeline */
 var timeline = [];
 
-/* define welcome message trial */
+/* Enter fullscreen mode */
 var welcome = {
-    type: "html-keyboard-response",
-    stimulus: "Welcome to the experiment. Press any key to begin."
+  type: "fullscreen",
+  fullscreen_mode: true,
+  message: "<p>Welcome to the experiment. Click the button below to begin.</p>",
+  button_label: "Begin",
+  delay_after: 2000
 };
 timeline.push(welcome);
 
-/* define instructions trial */
+/* Define instructions trial */
 var instructions = {
     type: "html-keyboard-response",
     stimulus: "<p>In this experiment, you will keep your eyes focused on the center cross while moving dots appear in your peripheral vision.</p>" +
-              "<p>If the motion of the dots is <strong>expanding outward</strong>, press the letter <strong>F</strong> on your keyboard as fast as you can.</p>" +
-              "<p>If the motion of the dots is <strong>contracting inward</strong>, press the letter <strong>J</strong></p>" +
+              "<p>If the motion of the dots is <strong>expanding outward</strong>, press the letter <strong>A</strong> on your keyboard as fast as you can.</p>" +
+              "<p>If the motion of the dots is <strong>contracting inward</strong>, press the letter <strong>L</strong></p>" +
               "<p>Press any key to begin.</p>",
     post_trial_gap: 1000
 };
 timeline.push(instructions);
 
-/* test trials */
-
-var test_stimuli = [
-    { stimulus: "img/blue.png", data: { test_part: 'test', correct_response: 'f' } },
-    { stimulus: "img/orange.png", data: { test_part: 'test', correct_response: 'j' } }
-];
-
 var fixation = {
-    type: 'html-keyboard-response',
-    stimulus: '<div style="font-size:60px;">+</div>',
+    type: 'radial-rdk',
     choices: jsPsych.NO_KEYS,
-    trial_duration: function(){
-    return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
+    number_of_dots: 0,
+    background_color: 'white',
+    fixation_cross: true,
+    fixation_cross_width: 14,
+    fixation_cross_height: 14,
+    fixation_cross_color: '#606c76',
+    fixation_cross_thickness: 4,
+    trial_duration: function() {
+        return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
     },
     data: {test_part: 'fixation'}
 }
 
+var test_params = [
+    {coherent_direction : 0, correct_choice: ["a"]},
+    {coherent_direction: 180, correct_choice: ["l"]}
+]
+
 var test = {
-	type: "rdk",
-	timing_post_trial: 0,
-	number_of_dots: 200,
-    aperture_center_x: window.innerWidth/4,
-    aperture_center_x: window.innerHeight/4,
-    fixation_cross: "true",
-    background_color: "white",
-    dot_color: "black",
-
-	RDK_type: 3,
-	choices: ["a", "l"],
-	correct_choice: "a",
-	coherent_direction: 180,
-	trial_duration: 1000
+	type: "radial-rdk",
+    choices: ["a","l"],
+    correct_choice: jsPsych.timelineVariable("correct_choice"),
+    trial_duration: -1,
+    response_ends_trial: true,
+    number_of_apertures: 1,
+    number_of_dots: 2000,
+    number_of_sets: 1,
+    coherent_direction: jsPsych.timelineVariable("coherent_direction"),
+    coherence: 1,
+    opposite_coherence: 0,
+    dot_radius: 2,
+    dot_life: -1,
+    move_distance: 4,
+    aperture_width: 300,
+    aperture_height: 300,
+    dot_color: 'black',
+    background_color: 'white',
+    RDK_type: 0,
+    aperture_type: 1,
+    reinsert_type: 1,
+    aperture_center_x: function () { return 3*window.innerWidth/4 },
+    aperture_center_y: function () { return window.innerHeight/4 },
+    fixation_cross: true,
+    fixation_cross_width: 14,
+    fixation_cross_height: 14,
+    fixation_cross_color: '#606c76',
+    fixation_cross_thickness: 4,
+    border: false,
+    border_thickness: 0,
+    border_color: 1,
+    data: {test_part: 'test'}
 };
-
 
 var test_procedure = {
     timeline: [fixation, test],
-    timeline_variables: test_stimuli,
-    repetitions: 5,
+    timeline_variables: test_params,
+    repetitions: 4,
     randomize_order: true
 }
 timeline.push(test_procedure);
@@ -80,6 +105,7 @@ var debrief_block = {
     var correct_trials = trials.filter({correct: true});
     var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
     var rt = Math.round(correct_trials.select('rt').mean());
+    console.log(correct_trials);
 
     return "<p>You responded correctly on "+accuracy+"% of the trials.</p>"+
     "<p>Your average response time was "+rt+"ms.</p>"+

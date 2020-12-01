@@ -15,5 +15,7 @@
 
     <script src="/lib/jspsych-6.0.5/jspsych.js"></script>
     <link href="/lib/jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/jspsych-mod.css">
 </head>
 <body><body>

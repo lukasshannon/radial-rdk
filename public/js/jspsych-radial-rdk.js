@@ -29,12 +29,12 @@
 */
 		
 		
-jsPsych.plugins["rdk"] = (function() {
+jsPsych.plugins["radial-rdk"] = (function() {
 
 	var plugin = {};
 	
 	plugin.info = {
-	    name: "rdk",
+	    name: "radial-rdk",
 	    parameters: {
 		    choices: {
 		      type: jsPsych.plugins.parameterType.INT,
@@ -191,7 +191,7 @@ jsPsych.plugins["rdk"] = (function() {
 		    fixation_cross_color: {
 		      type: jsPsych.plugins.parameterType.STRING,
 		      pretty_name: "Fixation cross color",
-		      default: "black",
+		      default: "blue",
 		      description: "The color of the fixation cross"
 		    },
 		    fixation_cross_thickness: {
@@ -256,7 +256,7 @@ jsPsych.plugins["rdk"] = (function() {
 		trial.fixation_cross = assignParameterValue(trial.fixation_cross, false); 
 		trial.fixation_cross_width = assignParameterValue(trial.fixation_cross_width, 20);
 		trial.fixation_cross_height = assignParameterValue(trial.fixation_cross_height, 20);
-		trial.fixation_cross_color = assignParameterValue(trial.fixation_cross_color, "black");
+		trial.fixation_cross_color = assignParameterValue(trial.fixation_cross_color, "blue");
 		trial.fixation_cross_thickness = assignParameterValue(trial.fixation_cross_thickness, 1);
 		trial.border = assignParameterValue(trial.border, false);
 		trial.border_thickness = assignParameterValue(trial.border_thickness, 1);
@@ -721,7 +721,7 @@ jsPsych.plugins["rdk"] = (function() {
 			border = borderArray[currentApertureNumber];
 			borderThickness = borderThicknessArray[currentApertureNumber];
 			borderColor = borderColorArray[currentApertureNumber];
-
+		
 			//Calculate the x and y jump sizes for coherent dots
 			coherentJumpSizeX = calculateCoherentJumpSizeX(coherentDirection);
 			coherentJumpSizeY = calculateCoherentJumpSizeY(coherentDirection);
@@ -796,6 +796,24 @@ jsPsych.plugins["rdk"] = (function() {
 				
 				//randomly set the x and y coordinates
 				dot = resetLocation(dot);
+
+				//For the radial, same && random position RDK type
+				if (RDK == 0) {
+					//For coherent dots
+					if (i < nCoherentDots) {
+						dot = setvxrvyr(dot); // Set dot.vx and dot.vy
+						dot.updateType = "constant direction";
+					}
+					//For opposite coherent dots
+					else if(i >= nCoherentDots && i < (nCoherentDots + nOppositeCoherentDots)){
+								dot = setvxvy(dot); // Set dot.vx and dot.vy
+						dot.updateType = "opposite direction";
+					}
+					//For incoherent dots
+					else {
+						dot.updateType = "random position";
+					}
+				} //End of RDK==0
 
 				//For the same && random position RDK type
 				if (RDK == 1) {
@@ -955,7 +973,7 @@ jsPsych.plugins["rdk"] = (function() {
 		    	ctx.lineWidth = fixationCrossThickness;
 		    	ctx.moveTo(canvasWidth/2 - fixationCrossWidth, canvasHeight/2);
 		    	ctx.lineTo(canvasWidth/2 + fixationCrossWidth, canvasHeight/2);
-		    	ctx.fillStyle = fixationCrossColor;
+				ctx.strokeStyle = fixationCrossColor,
 		    	ctx.stroke();
 		    	
 		    	//Vertical line
@@ -963,7 +981,7 @@ jsPsych.plugins["rdk"] = (function() {
 		    	ctx.lineWidth = fixationCrossThickness;
 		    	ctx.moveTo(canvasWidth/2, canvasHeight/2 - fixationCrossHeight);
 		    	ctx.lineTo(canvasWidth/2, canvasHeight/2 + fixationCrossHeight);
-		    	ctx.fillStyle = fixationCrossColor;
+				ctx.strokeStyle = fixationCrossColor,
 		    	ctx.stroke();
 		    }
       
@@ -1072,6 +1090,7 @@ jsPsych.plugins["rdk"] = (function() {
 							dot = reinsertOnOppositeEdge(dot);
 							break;
 					} //End of switch statement
+					if(RDK == 0) setvxrvyr(dot);
 				} //End of if
 
 			} //End of for loop
@@ -1097,6 +1116,12 @@ jsPsych.plugins["rdk"] = (function() {
 
 		//Function to check if dot is out of bounds
 		function outOfBounds(dot) {
+			//For radial motion
+			if (RDK == 0) {
+				if (dot.x > apertureCenterX - moveDistance/2 && dot.x < apertureCenterX + moveDistance/2 && dot.y > apertureCenterY - moveDistance/2 && dot.y < apertureCenterY + moveDistance/2) { 
+					return true;
+				}
+			}
 			//For circle and ellipse
 			if (apertureType == 1 || apertureType == 2) {
 				if (dot.x < xValueNegative(dot.y) || dot.x > xValuePositive(dot.y) || dot.y < yValueNegative(dot.x) || dot.y > yValuePositive(dot.x)) {
@@ -1113,11 +1138,11 @@ jsPsych.plugins["rdk"] = (function() {
 					return false;
 				}
 			}
-
 		}
 
 		//Set the vx and vy for the dot to the coherent jump sizes of the X and Y directions
 		function setvxvy(dot) {
+
 			dot.vx = coherentJumpSizeX;
 			dot.vy = coherentJumpSizeY;
 			return dot;
@@ -1132,6 +1157,27 @@ jsPsych.plugins["rdk"] = (function() {
 			dot.vy2 = -Math.sin(theta) * moveDistance;
 			return dot;
 		}
+
+/* ------------------------------ BEGIN INSERTED CODE ----------------------------- */
+
+		//Set the vx2 and vy2 based on an angle away from origin
+		function setvxrvyr(dot) {
+			//Generate a movement relative to origin
+			var xPos = dot.x - apertureCenterX;
+			var yPos = apertureCenterY - dot.y; // y-axis is flipped on canvas
+			var theta = Math.atan(yPos/xPos);
+			if (xPos < 0) theta += Math.PI; // reflect on y-axis
+
+			var isExpanding = coherentDirection >= 180;
+
+			//Update properties vx and vy with the alternate directions
+			dot.vx = -Math.cos(theta) * moveDistance * (isExpanding ? -1 : 1);
+			dot.vy = Math.sin(theta) * moveDistance * (isExpanding ? -1 : 1);
+
+			return dot;
+		}
+
+/* ------------------------------ END INSERTED CODE ----------------------------- */
 
 		//Updates the x and y coordinates by moving it in the x and y coherent directions
 		function constantDirectionUpdate(dot) {
