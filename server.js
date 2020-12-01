@@ -16,14 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Homepage
 app.get("/", (request, response) => {
-  response.render("index", {});
-});
-
-// Experiment
-app.get("/experiment", (request, response) => {
-  response.render("experiment", {
-    "title": "Experiment"
-  })
+  response.render("experiment", {});
 });
 
 // Listen for requests

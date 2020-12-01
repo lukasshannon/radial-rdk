@@ -16,11 +16,11 @@ var welcome = {
   fullscreen_mode: true,
   message: "<p>Welcome to the experiment. Click the button below to begin.</p>",
   button_label: "Begin",
-  delay_after: 2000
+  delay_after: 1000
 };
 timeline.push(welcome);
 
-/* Define instructions trial */
+/* Display instructions */
 var instructions = {
     type: "html-keyboard-response",
     stimulus: "<p>In this experiment, you will keep your eyes focused on the center cross while moving dots appear in your peripheral vision.</p>" +
@@ -31,45 +31,39 @@ var instructions = {
 };
 timeline.push(instructions);
 
+/* Define inter-trial fixation cross */
 var fixation = {
     type: 'radial-rdk',
     choices: jsPsych.NO_KEYS,
     number_of_dots: 0,
     background_color: 'white',
     fixation_cross: true,
-    fixation_cross_width: 14,
-    fixation_cross_height: 14,
-    fixation_cross_color: '#606c76',
+    fixation_cross_color: 'gray',
     fixation_cross_thickness: 4,
     trial_duration: function() {
-        return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
+        return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500], 1)[0];
     },
     data: {test_part: 'fixation'}
 }
 
+/* Define variations of test */
 var test_params = [
-    {coherent_direction : 0, correct_choice: ["a"]},
-    {coherent_direction: 180, correct_choice: ["l"]}
+    {coherent_direction : 0, correct_choice: ["l"]},
+    {coherent_direction: 180, correct_choice: ["a"]}
 ]
 
+/* Define test */
 var test = {
 	type: "radial-rdk",
     choices: ["a","l"],
     correct_choice: jsPsych.timelineVariable("correct_choice"),
     trial_duration: -1,
-    response_ends_trial: true,
-    number_of_apertures: 1,
     number_of_dots: 2000,
-    number_of_sets: 1,
     coherent_direction: jsPsych.timelineVariable("coherent_direction"),
     coherence: 1,
     opposite_coherence: 0,
-    dot_radius: 2,
-    dot_life: -1,
-    move_distance: 4,
     aperture_width: 300,
-    aperture_height: 300,
-    dot_color: 'black',
+    dot_color: 'gray',
     background_color: 'white',
     RDK_type: 0,
     aperture_type: 1,
@@ -77,26 +71,23 @@ var test = {
     aperture_center_x: function () { return 3*window.innerWidth/4 },
     aperture_center_y: function () { return window.innerHeight/4 },
     fixation_cross: true,
-    fixation_cross_width: 14,
-    fixation_cross_height: 14,
-    fixation_cross_color: '#606c76',
+    fixation_cross_color: 'gray',
     fixation_cross_thickness: 4,
-    border: false,
-    border_thickness: 0,
-    border_color: 1,
     data: {test_part: 'test'}
 };
 
+/* Test procedure */
 var test_procedure = {
     timeline: [fixation, test],
     timeline_variables: test_params,
-    repetitions: 4,
-    randomize_order: true
+    sample: {
+        type: "with-replacement",
+        size: 10
+    }
 }
 timeline.push(test_procedure);
 
-/* define debrief */
-
+/* Debrief displaying results */
 var debrief_block = {
     type: "html-keyboard-response",
     stimulus: function() {
@@ -115,7 +106,13 @@ var debrief_block = {
 };
 timeline.push(debrief_block);
 
-/* start the experiment */
+/* Exit fullscreen mode */
+timeline.push({
+  type: "fullscreen",
+  fullscreen_mode: false
+});
+
+/* Start the experiment */
 jsPsych.init({
     timeline: timeline,
     on_finish: () => {
